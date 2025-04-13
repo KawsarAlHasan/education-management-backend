@@ -24,7 +24,7 @@ router.post("/login", loginForEmailPassword);
 router.post("/reset-password-request", resetPasswordRequest);
 router.post("/reset-password-confirm", resetPasswordConfirm);
 router.post("/socail-media", verifyTokenForSocailMedia);
-router.get("/me", verifyToken, getMeUser);
+router.get("/me", verifyUser, getMeUser);
 router.get("/all", getAllUsers);
 router.get("/:id", getSingleUser);
 router.put(

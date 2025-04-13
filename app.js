@@ -22,6 +22,7 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 
 // auth
 app.use("/api/v1/user", require("./router/authRouter/userRoute"));
+app.use("/api/v1/forgot", require("./router/authRouter/forgotPassword"));
 // app.use("/api/v1/vendor", require("./router/vendors/vendorRoute"));
 // app.use(
 //   "/api/v1/vendor-employees",

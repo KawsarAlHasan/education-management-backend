@@ -107,7 +107,7 @@ exports.loginForEmailPassword = async (req, res) => {
         error: "Email and Password is not correct",
       });
     }
-    const token = generateUserToken({ id: user.id });
+    const token = generateUserToken({ uid: user.uid });
     const { password: pwd, ...usersWithoutPassword } = user;
     res.status(200).json({
       success: true,
