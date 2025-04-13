@@ -5,7 +5,6 @@ const {
   getSingleUser,
   userStatusUpdate,
   deleteUser,
-  // verifyToken,
   getMeUser,
   updateUser,
   loginForEmailPassword,
@@ -15,7 +14,6 @@ const {
 } = require("../../controllers/authController/userController");
 const verifyUser = require("../../middleware/verifyUser");
 const uploadImage = require("../../middleware/fileUploader");
-const verifyToken = require("../../middleware/verifyToken");
 
 const router = express.Router();
 

@@ -442,7 +442,7 @@ exports.updateUser = async (req, res) => {
     const userPreData = req.decodedUser;
 
     // Extract data from the request body
-    const { first_name, email, phone } = req.body;
+    const { first_name, last_name, email, phone, country } = req.body;
 
     const images = req.file;
     let profile_pic = userPreData?.profile_pic;
@@ -452,12 +452,14 @@ exports.updateUser = async (req, res) => {
 
     // Update the user data in the database
     const [data] = await db.query(
-      `UPDATE users SET first_name=?, email=?, phone=?, profile_pic=? WHERE id = ?`,
+      `UPDATE users SET first_name=?, last_name=?, email=?, phone=?, profile_pic=?, country=? WHERE id = ?`,
       [
         first_name || userPreData.first_name,
+        last_name || userPreData.last_name,
         email || userPreData.email,
         phone || userPreData.phone,
         profile_pic,
+        country || userPreData.country,
         userPreData.id,
       ]
     );
