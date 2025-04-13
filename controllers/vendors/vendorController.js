@@ -392,7 +392,7 @@ exports.updateVendor = async (req, res) => {
     const images = req.file;
     let profile_picture = vendorPreData?.profile_picture;
     if (images && images.path) {
-      profile_picture = `https://api.garirhat.com/public/images/${images.filename}`;
+      profile_picture = `https://education-management-backend-8jm1.onrender.com/public/images/${images.filename}`;
     }
 
     // Update the vendor data in the database
@@ -439,7 +439,7 @@ exports.updateVendorBanner = async (req, res) => {
     const images = req.file;
     let banner = vendorPreData?.banner;
     if (images && images.path) {
-      banner = `https://api.garirhat.com/public/images/${images.filename}`;
+      banner = `https://education-management-backend-8jm1.onrender.com/public/images/${images.filename}`;
     }
 
     // Update the vendor data in the database
@@ -488,11 +488,11 @@ exports.updateNIDCardVendor = async (req, res) => {
     let nid_card_back = vendorPreData?.nid_card_back;
 
     if (images?.nid_card_front?.length > 0) {
-      nid_card_front = `https://api.garirhat.com/public/images/${images["nid_card_front"][0].filename}`;
+      nid_card_front = `https://education-management-backend-8jm1.onrender.com/public/images/${images["nid_card_front"][0].filename}`;
     }
 
     if (images?.nid_card_back?.length > 0) {
-      nid_card_back = `https://api.garirhat.com/public/images/${images["nid_card_back"][0].filename}`;
+      nid_card_back = `https://education-management-backend-8jm1.onrender.com/public/images/${images["nid_card_back"][0].filename}`;
     }
 
     // Update the vendor data in the database

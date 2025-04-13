@@ -59,7 +59,7 @@ exports.createNewVendorEmployee = async (req, res) => {
     const images = req.file;
     let image = "";
     if (images && images.path) {
-      image = `https://api.garirhat.com/public/images/${images.filename}`;
+      image = `https://education-management-backend-8jm1.onrender.com/public/images/${images.filename}`;
     }
 
     const query =

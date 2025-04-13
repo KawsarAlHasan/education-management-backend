@@ -29,6 +29,13 @@ app.use("/api/v1/forgot", require("./router/authRouter/forgotPassword"));
 //   require("./router/vendors/vendorsEmployeesRoute")
 // );
 
+// education
+app.use("/api/v1/courses", require("./router/educationRouter/coursesRoute"));
+app.use(
+  "/api/v1/courses-topic",
+  require("./router/educationRouter/courseTopicRoute")
+);
+
 // Default Route
 app.get("/", (req, res) => {
   res.status(200).send("Education Managemant server is working");

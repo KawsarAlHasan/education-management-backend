@@ -447,7 +447,7 @@ exports.updateUser = async (req, res) => {
     const images = req.file;
     let profile_pic = userPreData?.profile_pic;
     if (images && images.path) {
-      profile_pic = `https://api.garirhat.com/public/images/${images.filename}`;
+      profile_pic = `https://education-management-backend-8jm1.onrender.com/public/images/${images.filename}`;
     }
 
     // Update the user data in the database

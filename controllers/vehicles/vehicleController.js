@@ -93,7 +93,7 @@ exports.createNewVehicle = async (req, res) => {
       req.files.thumbnail_image &&
       req.files.thumbnail_image.length > 0
     ) {
-      thumbnailUrl = `https://api.garirhat.com/public/images/${req.files.thumbnail_image[0].filename}`;
+      thumbnailUrl = `https://education-management-backend-8jm1.onrender.com/public/images/${req.files.thumbnail_image[0].filename}`;
     }
 
     // Generate unique vehicle code
@@ -180,7 +180,7 @@ exports.createNewVehicle = async (req, res) => {
 
       const imageValues = req.files.images.map((file) => [
         vehicle_id,
-        `https://api.garirhat.com/public/images/${file.filename}`,
+        `https://education-management-backend-8jm1.onrender.com/public/images/${file.filename}`,
       ]);
 
       await db.query(imageInsertQuery, [imageValues]);
@@ -678,7 +678,7 @@ exports.updateVehicle = async (req, res) => {
       if (fs.existsSync(thumbnailImagePath)) {
         fs.unlinkSync(thumbnailImagePath);
       }
-      thumbnailUrl = `https://api.garirhat.com/public/images/${req.files.thumbnail_image[0].filename}`;
+      thumbnailUrl = `https://education-management-backend-8jm1.onrender.com/public/images/${req.files.thumbnail_image[0].filename}`;
     }
 
     let totalPrice = prices.reduce((sum, p) => sum + parseFloat(p.amount), 0);
@@ -758,7 +758,7 @@ exports.updateVehicle = async (req, res) => {
 
       const imageValues = req.files.images.map((file) => [
         id,
-        `https://api.garirhat.com/public/images/${file.filename}`,
+        `https://education-management-backend-8jm1.onrender.com/public/images/${file.filename}`,
       ]);
 
       await db.query(imageInsertQuery, [imageValues]);
