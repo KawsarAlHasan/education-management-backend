@@ -350,6 +350,48 @@ exports.getSingleUser = async (req, res) => {
   }
 };
 
+// user role
+exports.userRoleUpdate = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    if (!userId) {
+      return res.status(201).send({
+        success: false,
+        message: "User ID is required in params",
+      });
+    }
+
+    const { role } = req.body;
+    if (!role) {
+      return res.status(201).send({
+        success: false,
+        message: "role is requied in body",
+      });
+    }
+
+    const [data] = await db.query(`SELECT * FROM users WHERE id=? `, [userId]);
+    if (!data || data.length === 0) {
+      return res.status(201).send({
+        success: false,
+        message: "No user found",
+      });
+    }
+
+    await db.query(`UPDATE users SET role=?  WHERE id =?`, [role, userId]);
+
+    res.status(200).send({
+      success: true,
+      message: "role updated successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in Update role",
+      error: error.message,
+    });
+  }
+};
+
 // user status
 exports.userStatusUpdate = async (req, res) => {
   try {
@@ -442,7 +484,7 @@ exports.updateUser = async (req, res) => {
     const userPreData = req.decodedUser;
 
     // Extract data from the request body
-    const { first_name, last_name, email, phone, country } = req.body;
+    const { first_name, last_name, email, phone, country, role } = req.body;
 
     const images = req.file;
     let profile_pic = userPreData?.profile_pic;
@@ -460,6 +502,7 @@ exports.updateUser = async (req, res) => {
         phone || userPreData.phone,
         profile_pic,
         country || userPreData.country,
+        role || userPreData.role,
         userPreData.id,
       ]
     );

@@ -11,6 +11,7 @@ const {
   resetPasswordRequest,
   resetPasswordConfirm,
   verifyTokenForSocailMedia,
+  userRoleUpdate,
 } = require("../../controllers/authController/userController");
 const verifyUser = require("../../middleware/verifyUser");
 const uploadImage = require("../../middleware/fileUploader");
@@ -32,6 +33,7 @@ router.put(
   updateUser
 );
 router.put("/status/:id", userStatusUpdate);
+router.put("/role/:id", userRoleUpdate);
 router.delete("/delete/:id", deleteUser);
 
 module.exports = router;
