@@ -494,7 +494,7 @@ exports.updateUser = async (req, res) => {
 
     // Update the user data in the database
     const [data] = await db.query(
-      `UPDATE users SET first_name=?, last_name=?, email=?, phone=?, profile_pic=?, country=? WHERE id = ?`,
+      `UPDATE users SET first_name=?, last_name=?, email=?, phone=?, profile_pic=?, country=?, role=? WHERE id = ?`,
       [
         first_name || userPreData.first_name,
         last_name || userPreData.last_name,
