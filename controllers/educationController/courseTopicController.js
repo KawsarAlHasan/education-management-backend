@@ -71,6 +71,8 @@ exports.getAllCoursesTopic = async (req, res) => {
       `SELECT 
         tfct.course_topic_id,
         tfct.teacher_id,
+        tfct.total_duration, 
+        tfct.total_chapter, 
         u.*
       FROM teachers_for_course_topic tfct
       LEFT JOIN users u ON tfct.teacher_id = u.id
@@ -123,6 +125,8 @@ exports.getSingleCoursesTopic = async (req, res) => {
     const [teachers] = await db.query(
       `SELECT 
       tfct.teacher_id, 
+      tfct.total_duration, 
+      tfct.total_chapter, 
       u.*
       FROM teachers_for_course_topic tfct
       LEFT JOIN users u ON tfct.teacher_id = u.id
