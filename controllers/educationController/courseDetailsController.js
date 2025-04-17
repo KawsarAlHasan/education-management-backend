@@ -1,12 +1,11 @@
 const db = require("../../config/db");
 
-// course_details: id courses_id courses_topic_id teacher_id packages semister
+// course_details: id courses_id courses_topic_id teacher_id
 
 // create new course_details
 exports.createNewCoursesDetails = async (req, res) => {
   try {
-    const { courses_id, courses_topic_id, teacher_id, packages, semister } =
-      req.body;
+    const { courses_id, courses_topic_id, teacher_id } = req.body;
 
     if (!courses_id || !courses_topic_id || !teacher_id) {
       return res.status(400).send({
@@ -17,15 +16,9 @@ exports.createNewCoursesDetails = async (req, res) => {
     }
 
     const query =
-      "INSERT INTO course_details (courses_id, courses_topic_id, teacher_id, packages, semister) VALUES (?, ?, ?, ?, ?)";
+      "INSERT INTO course_details (courses_id, courses_topic_id, teacher_id) VALUES (?, ?, ?)";
 
-    const values = [
-      courses_id,
-      courses_topic_id,
-      teacher_id,
-      packages || "",
-      semister || "",
-    ];
+    const values = [courses_id, courses_topic_id, teacher_id];
 
     const [result] = await db.query(query, values);
 
@@ -48,59 +41,6 @@ exports.createNewCoursesDetails = async (req, res) => {
     });
   }
 };
-
-// status
-// profile_pic
-// phone
-// country
-// email
-// last_name
-// first_name
-
-// // Get Single Courses Topic
-// exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
-//   try {
-//     const { teacher_id, course_topic_id } = req.query;
-
-//     const [data] = await db.query("SELECT * FROM course_topic WHERE id = ?", [
-//       course_topic_id,
-//     ]);
-
-//     if (data.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Data not found",
-//       });
-//     }
-
-//     const [teachers] = await db.query(
-//       `SELECT
-//       tfct.teacher_id,
-//       u.*
-//       FROM teachers_for_course_topic tfct
-//       LEFT JOIN users u ON tfct.teacher_id = u.id
-//       WHERE tfct.course_topic_id = ?`,
-//       [course_topic_id]
-//     );
-
-//     const result = {
-//       ...data[0],
-//       teachers,
-//     };
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Get Single Course Topic",
-//       data: result,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error in fetching Course Topic",
-//       error: error.message,
-//     });
-//   }
-// };
 
 // get all courses Details
 exports.getAllCoursesDetails = async (req, res) => {
@@ -154,13 +94,44 @@ exports.getAllCoursesDetails = async (req, res) => {
   }
 };
 
+// // Get Single Courses Details
+// exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
+//   try {
+//     const { course_topic_id, teacher_id } = req.query;
+
+//     const [data] = await db.query(
+//       "SELECT * FROM course_details WHERE courses_topic_id = ? AND teacher_id =?",
+//       [course_topic_id, teacher_id]
+//     );
+
+//     if (data.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Data not found",
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Get Single Course details",
+//       data: data,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Error in fetching Course details",
+//       error: error.message,
+//     });
+//   }
+// };
+
 // Get Single Courses Details
 exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
   try {
     const { course_topic_id, teacher_id } = req.query;
 
     const [data] = await db.query(
-      "SELECT * FROM course_details WHERE courses_topic_id = ? AND teacher_id =?",
+      "SELECT * FROM course_details WHERE courses_topic_id=? AND teacher_id=?",
       [course_topic_id, teacher_id]
     );
 
@@ -171,10 +142,51 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
       });
     }
 
+    const [teacher] = await db.query(`SELECT * FROM users WHERE id=? `, [
+      teacher_id,
+    ]);
+
+    const [packages] = await db.query(
+      `SELECT * FROM packages WHERE course_details_id=?`,
+      [data[0].id]
+    );
+
+    for (const package of packages) {
+      const packageId = package.id;
+      const [videos] = await db.query(
+        `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        [packageId, "packages"]
+      );
+
+      package.videos = videos;
+    }
+
+    const [semesters] = await db.query(
+      `SELECT * FROM semester WHERE course_details_id=?`,
+      [data[0].id]
+    );
+
+    for (const semester of semesters) {
+      const semesterId = semester.id;
+      const [videos] = await db.query(
+        `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        [semesterId, "semester"]
+      );
+
+      semester.videos = videos;
+    }
+
+    const result = {
+      ...data[0],
+      teacher: teacher[0],
+      packages: packages,
+      semester: semesters,
+    };
+
     res.status(200).json({
       success: true,
-      message: "Get Single Course details",
-      data: data,
+      message: "Get Single Course details with videos",
+      data: result,
     });
   } catch (error) {
     res.status(500).json({
@@ -220,8 +232,7 @@ exports.updateCoursesDetails = async (req, res) => {
   try {
     const coursesDetailsID = req.params.id;
 
-    const { courses_id, courses_topic_id, teacher_id, packages, semister } =
-      req.body;
+    const { courses_id, courses_topic_id, teacher_id } = req.body;
 
     const [data] = await db.query(`SELECT * FROM course_details WHERE id=? `, [
       coursesDetailsID,
@@ -234,13 +245,11 @@ exports.updateCoursesDetails = async (req, res) => {
     }
 
     await db.query(
-      `UPDATE course_details SET courses_id=?, courses_topic_id=?, teacher_id=?, packages=?, semister=? WHERE id =?`,
+      `UPDATE course_details SET courses_id=?, courses_topic_id=?, teacher_id=? WHERE id =?`,
       [
         courses_id || data[0].courses_id,
         courses_topic_id || data[0].courses_topic_id,
         teacher_id || data[0].teacher_id,
-        packages || data[0].packages,
-        semister || data[0].semister,
         coursesDetailsID,
       ]
     );
