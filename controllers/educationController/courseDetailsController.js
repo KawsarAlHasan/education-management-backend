@@ -57,6 +57,51 @@ exports.createNewCoursesDetails = async (req, res) => {
 // last_name
 // first_name
 
+// // Get Single Courses Topic
+// exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
+//   try {
+//     const { teacher_id, course_topic_id } = req.query;
+
+//     const [data] = await db.query("SELECT * FROM course_topic WHERE id = ?", [
+//       course_topic_id,
+//     ]);
+
+//     if (data.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Data not found",
+//       });
+//     }
+
+//     const [teachers] = await db.query(
+//       `SELECT
+//       tfct.teacher_id,
+//       u.*
+//       FROM teachers_for_course_topic tfct
+//       LEFT JOIN users u ON tfct.teacher_id = u.id
+//       WHERE tfct.course_topic_id = ?`,
+//       [course_topic_id]
+//     );
+
+//     const result = {
+//       ...data[0],
+//       teachers,
+//     };
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Get Single Course Topic",
+//       data: result,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Error in fetching Course Topic",
+//       error: error.message,
+//     });
+//   }
+// };
+
 // get all courses Details
 exports.getAllCoursesDetails = async (req, res) => {
   try {
@@ -104,6 +149,37 @@ exports.getAllCoursesDetails = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in Get All Courses Details",
+      error: error.message,
+    });
+  }
+};
+
+// Get Single Courses Details
+exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
+  try {
+    const { course_topic_id, teacher_id } = req.query;
+
+    const [data] = await db.query(
+      "SELECT * FROM course_details WHERE courses_topic_id = ? AND teacher_id =?",
+      [course_topic_id, teacher_id]
+    );
+
+    if (data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Data not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Get Single Course details",
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error in fetching Course details",
       error: error.message,
     });
   }
