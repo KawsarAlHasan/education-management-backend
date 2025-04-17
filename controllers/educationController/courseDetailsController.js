@@ -94,39 +94,8 @@ exports.getAllCoursesDetails = async (req, res) => {
   }
 };
 
-// // Get Single Courses Details
-// exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
-//   try {
-//     const { course_topic_id, teacher_id } = req.query;
-
-//     const [data] = await db.query(
-//       "SELECT * FROM course_details WHERE courses_topic_id = ? AND teacher_id =?",
-//       [course_topic_id, teacher_id]
-//     );
-
-//     if (data.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Data not found",
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Get Single Course details",
-//       data: data,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error in fetching Course details",
-//       error: error.message,
-//     });
-//   }
-// };
-
 // Get Single Courses Details
-exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
+exports.getSingleTeacherWithCoursesDetails2 = async (req, res) => {
   try {
     const { course_topic_id, teacher_id } = req.query;
 
@@ -181,6 +150,85 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
       teacher: teacher[0],
       packages: packages,
       semester: semesters,
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Get Single Course details with videos",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error in fetching Course details",
+      error: error.message,
+    });
+  }
+};
+
+// Get Single Courses Details
+exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
+  try {
+    const { course_topic_id, teacher_id } = req.query;
+
+    const [data] = await db.query(
+      "SELECT * FROM course_details WHERE courses_topic_id=? AND teacher_id=?",
+      [course_topic_id, teacher_id]
+    );
+
+    if (data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Data not found",
+      });
+    }
+
+    const [teacher] = await db.query(`SELECT * FROM users WHERE id=? `, [
+      teacher_id,
+    ]);
+
+    const [packages] = await db.query(
+      `SELECT * FROM packages WHERE course_details_id=?`,
+      [data[0].id]
+    );
+
+    for (const package of packages) {
+      const packageId = package.id;
+      const [videos] = await db.query(
+        `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        [packageId, "packages"]
+      );
+
+      package.videos = videos;
+    }
+
+    const [semesters] = await db.query(
+      `SELECT * FROM semester WHERE course_details_id=?`,
+      [data[0].id]
+    );
+
+    const semesterId = semesters[0].id;
+    const [semesterVideos] = await db.query(
+      `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+      [semesterId, "semester"]
+    );
+
+    const [chapter] = await db.query(
+      `SELECT id, chapter_name FROM chapter WHERE course_details_id=?`,
+      [data[0].id]
+    );
+
+    const semesterResult = {
+      chapter: chapter,
+      ...semesters[0],
+      vedios: semesterVideos,
+    };
+
+    const result = {
+      ...data[0],
+      teacher: teacher[0],
+      packages: packages,
+      semester: semesterResult,
     };
 
     res.status(200).json({
