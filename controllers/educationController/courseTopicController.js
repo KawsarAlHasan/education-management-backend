@@ -54,9 +54,9 @@ exports.getAllCoursesTopic = async (req, res) => {
       query += " ORDER BY id ASC";
     }
 
-    const [data] = await db.query(query, queryParams);
+    const [topics] = await db.query(query, queryParams);
 
-    if (!data || data.length === 0) {
+    if (!topics || topics.length === 0) {
       return res.status(200).send({
         success: true,
         message: "No course topic found",
@@ -64,11 +64,36 @@ exports.getAllCoursesTopic = async (req, res) => {
       });
     }
 
+    // Now get all teachers in one query to avoid N+1 issue
+    const topicIds = topics.map((t) => t.id);
+
+    const [teachersData] = await db.query(
+      `SELECT 
+        tfct.course_topic_id,
+        tfct.teacher_id,
+        u.*
+      FROM teachers_for_course_topic tfct
+      LEFT JOIN users u ON tfct.teacher_id = u.id
+      WHERE tfct.course_topic_id IN (?)`,
+      [topicIds]
+    );
+
+    // Map teachers to their respective course_topic
+    const topicMap = topics.map((topic) => {
+      const teachers = teachersData.filter(
+        (t) => t.course_topic_id === topic.id
+      );
+      return {
+        ...topic,
+        teachers,
+      };
+    });
+
     res.status(200).send({
       success: true,
-      message: "All Courses Topic",
-      totalCoursesTopic: data.length,
-      data: data,
+      message: "All Courses Topic with Teachers",
+      totalCoursesTopic: topicMap.length,
+      data: topicMap,
     });
   } catch (error) {
     res.status(500).send({
@@ -95,10 +120,25 @@ exports.getSingleCoursesTopic = async (req, res) => {
       });
     }
 
+    const [teachers] = await db.query(
+      `SELECT 
+      tfct.teacher_id, 
+      u.*
+      FROM teachers_for_course_topic tfct
+      LEFT JOIN users u ON tfct.teacher_id = u.id
+      WHERE tfct.course_topic_id = ?`,
+      [id]
+    );
+
+    const result = {
+      ...data[0],
+      teachers,
+    };
+
     res.status(200).json({
       success: true,
       message: "Get Single Course Topic",
-      data: data[0],
+      data: result,
     });
   } catch (error) {
     res.status(500).json({

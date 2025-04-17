@@ -49,11 +49,20 @@ exports.createNewCoursesDetails = async (req, res) => {
   }
 };
 
+// status
+// profile_pic
+// phone
+// country
+// email
+// last_name
+// first_name
+
 // get all courses Details
 exports.getAllCoursesDetails = async (req, res) => {
   try {
     const { order } = req.query;
     let query = "SELECT * FROM course_details";
+
     let queryParams = [];
 
     if (
@@ -73,6 +82,16 @@ exports.getAllCoursesDetails = async (req, res) => {
         message: "No Course details found",
         data: [],
       });
+    }
+
+    for (const singleData of data) {
+      const teacher_id = singleData.teacher_id;
+
+      const [teacherData] = await db.query(`SELECT * FROM users WHERE id=? `, [
+        teacher_id,
+      ]);
+
+      singleData.teacher = teacherData[0];
     }
 
     res.status(200).send({
