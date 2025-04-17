@@ -123,7 +123,7 @@ exports.getSingleTeacherWithCoursesDetails2 = async (req, res) => {
     for (const package of packages) {
       const packageId = package.id;
       const [videos] = await db.query(
-        `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
         [packageId, "packages"]
       );
 
@@ -138,7 +138,7 @@ exports.getSingleTeacherWithCoursesDetails2 = async (req, res) => {
     for (const semester of semesters) {
       const semesterId = semester.id;
       const [videos] = await db.query(
-        `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
         [semesterId, "semester"]
       );
 
@@ -195,7 +195,7 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
     for (const package of packages) {
       const packageId = package.id;
       const [videos] = await db.query(
-        `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
         [packageId, "packages"]
       );
 
@@ -209,7 +209,7 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
 
     const semesterId = semesters[0].id;
     const [semesterVideos] = await db.query(
-      `SELECT id, url, sr_no FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+      `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
       [semesterId, "semester"]
     );
 
