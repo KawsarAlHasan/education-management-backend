@@ -1,24 +1,36 @@
 const db = require("../../config/db");
 
-// course_details: id courses_id courses_topic_id teacher_id
+// course_details: id courses_id course_topic_id teacher_id
 
 // create new course_details
 exports.createNewCoursesDetails = async (req, res) => {
   try {
-    const { courses_id, courses_topic_id, teacher_id } = req.body;
+    const {
+      courses_id,
+      course_topic_id,
+      teacher_id,
+      total_chapter,
+      total_duration,
+    } = req.body;
 
-    if (!courses_id || !courses_topic_id || !teacher_id) {
+    if (!courses_id || !course_topic_id || !teacher_id) {
       return res.status(400).send({
         success: false,
         message:
-          "Please provide courses_id, courses_topic_id & teacher_id required fields",
+          "Please provide courses_id, course_topic_id & teacher_id required fields",
       });
     }
 
     const query =
-      "INSERT INTO course_details (courses_id, courses_topic_id, teacher_id) VALUES (?, ?, ?)";
+      "INSERT INTO course_details (courses_id, course_topic_id, teacher_id, total_chapter, total_duration) VALUES (?, ?, ?, ?, ?)";
 
-    const values = [courses_id, courses_topic_id, teacher_id];
+    const values = [
+      courses_id,
+      course_topic_id,
+      teacher_id,
+      total_chapter || "",
+      total_duration || "",
+    ];
 
     const [result] = await db.query(query, values);
 
@@ -94,77 +106,79 @@ exports.getAllCoursesDetails = async (req, res) => {
   }
 };
 
-// Get Single Courses Details
-exports.getSingleTeacherWithCoursesDetails2 = async (req, res) => {
-  try {
-    const { course_topic_id, teacher_id } = req.query;
+// // Get Single Courses Details
+// exports.getSingleTeacherWithCoursesDetails2 = async (req, res) => {
+//   try {
+//     const { course_topic_id, teacher_id } = req.query;
 
-    const [data] = await db.query(
-      "SELECT * FROM course_details WHERE courses_topic_id=? AND teacher_id=?",
-      [course_topic_id, teacher_id]
-    );
+//     const [data] = await db.query(
+//       "SELECT * FROM course_details WHERE course_topic_id=? AND teacher_id=?",
+//       [course_topic_id, teacher_id]
+//     );
 
-    if (data.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Data not found",
-      });
-    }
+//     console.log("data", data);
 
-    const [teacher] = await db.query(`SELECT * FROM users WHERE id=? `, [
-      teacher_id,
-    ]);
+//     if (data.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Data not found",
+//       });
+//     }
 
-    const [packages] = await db.query(
-      `SELECT * FROM packages WHERE course_details_id=?`,
-      [data[0].id]
-    );
+//     const [teacher] = await db.query(`SELECT * FROM users WHERE id=? `, [
+//       teacher_id,
+//     ]);
 
-    for (const package of packages) {
-      const packageId = package.id;
-      const [videos] = await db.query(
-        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
-        [packageId, "packages"]
-      );
+//     const [packages] = await db.query(
+//       `SELECT * FROM packages WHERE course_details_id=?`,
+//       [data[0].id]
+//     );
 
-      package.videos = videos;
-    }
+//     for (const package of packages) {
+//       const packageId = package.id;
+//       const [videos] = await db.query(
+//         `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+//         [packageId, "packages"]
+//       );
 
-    const [semesters] = await db.query(
-      `SELECT * FROM semester WHERE course_details_id=?`,
-      [data[0].id]
-    );
+//       package.videos = videos;
+//     }
 
-    for (const semester of semesters) {
-      const semesterId = semester.id;
-      const [videos] = await db.query(
-        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
-        [semesterId, "semester"]
-      );
+//     const [semesters] = await db.query(
+//       `SELECT * FROM semester WHERE course_details_id=?`,
+//       [data[0].id]
+//     );
 
-      semester.videos = videos;
-    }
+//     for (const semester of semesters) {
+//       const semesterId = semester.id;
+//       const [videos] = await db.query(
+//         `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+//         [semesterId, "semester"]
+//       );
 
-    const result = {
-      ...data[0],
-      teacher: teacher[0],
-      packages: packages,
-      semester: semesters,
-    };
+//       semester.videos = videos;
+//     }
 
-    res.status(200).json({
-      success: true,
-      message: "Get Single Course details with videos",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error in fetching Course details",
-      error: error.message,
-    });
-  }
-};
+//     const result = {
+//       ...data[0],
+//       teacher: teacher[0],
+//       packages: packages,
+//       semester: semesters,
+//     };
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Get Single Course details with videos",
+//       data: result,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Error in fetching Course details",
+//       error: error.message,
+//     });
+//   }
+// };
 
 // Get Single Courses Details
 exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
@@ -172,7 +186,7 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
     const { course_topic_id, teacher_id } = req.query;
 
     const [data] = await db.query(
-      "SELECT * FROM course_details WHERE courses_topic_id=? AND teacher_id=?",
+      "SELECT * FROM course_details WHERE course_topic_id=? AND teacher_id=?",
       [course_topic_id, teacher_id]
     );
 
@@ -183,39 +197,51 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
       });
     }
 
-    const [teacher] = await db.query(`SELECT * FROM users WHERE id=? `, [
+    const [teacher] = await db.query(`SELECT * FROM users WHERE id=?`, [
       teacher_id,
     ]);
 
+    const course_details_id = data[0].id;
+
     const [packages] = await db.query(
       `SELECT * FROM packages WHERE course_details_id=?`,
-      [data[0].id]
+      [course_details_id]
     );
 
     for (const package of packages) {
-      const packageId = package.id;
-      const [videos] = await db.query(
-        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
-        [packageId, "packages"]
-      );
+      const packageId = package?.id;
+      if (packageId) {
+        const [videos] = await db.query(
+          `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+          [packageId, "packages"]
+        );
 
-      package.videos = videos;
+        package.videos = videos;
+      } else {
+        package.videos = [];
+      }
     }
 
     const [semesters] = await db.query(
       `SELECT * FROM semester WHERE course_details_id=?`,
-      [data[0].id]
+      [course_details_id]
     );
 
-    const semesterId = semesters[0].id;
-    const [semesterVideos] = await db.query(
-      `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
-      [semesterId, "semester"]
-    );
+    const semesterId = semesters[0]?.id;
+    let semesterVideos = [];
+
+    if (semesterId) {
+      const [semVideos] = await db.query(
+        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        [semesterId, "semester"]
+      );
+
+      semesterVideos = semVideos;
+    }
 
     const [chapter] = await db.query(
       `SELECT id, chapter_name FROM chapter WHERE course_details_id=?`,
-      [data[0].id]
+      [course_details_id]
     );
 
     const semesterResult = {
@@ -280,7 +306,13 @@ exports.updateCoursesDetails = async (req, res) => {
   try {
     const coursesDetailsID = req.params.id;
 
-    const { courses_id, courses_topic_id, teacher_id } = req.body;
+    const {
+      courses_id,
+      course_topic_id,
+      teacher_id,
+      total_chapter,
+      total_duration,
+    } = req.body;
 
     const [data] = await db.query(`SELECT * FROM course_details WHERE id=? `, [
       coursesDetailsID,
@@ -293,11 +325,13 @@ exports.updateCoursesDetails = async (req, res) => {
     }
 
     await db.query(
-      `UPDATE course_details SET courses_id=?, courses_topic_id=?, teacher_id=? WHERE id =?`,
+      `UPDATE course_details SET courses_id=?, course_topic_id=?, teacher_id=?, total_chapter=?, total_duration=? WHERE id =?`,
       [
         courses_id || data[0].courses_id,
-        courses_topic_id || data[0].courses_topic_id,
+        course_topic_id || data[0].course_topic_id,
         teacher_id || data[0].teacher_id,
+        total_chapter || data[0].total_chapter,
+        total_duration || data[0].total_duration,
         coursesDetailsID,
       ]
     );

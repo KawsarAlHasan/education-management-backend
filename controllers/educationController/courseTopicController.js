@@ -69,14 +69,14 @@ exports.getAllCoursesTopic = async (req, res) => {
 
     const [teachersData] = await db.query(
       `SELECT 
-        tfct.course_topic_id,
-        tfct.teacher_id,
-        tfct.total_duration, 
-        tfct.total_chapter, 
+        c_d.course_topic_id,
+        c_d.teacher_id,
+        c_d.total_duration, 
+        c_d.total_chapter, 
         u.*
-      FROM teachers_for_course_topic tfct
-      LEFT JOIN users u ON tfct.teacher_id = u.id
-      WHERE tfct.course_topic_id IN (?)`,
+      FROM course_details c_d
+      LEFT JOIN users u ON c_d.teacher_id = u.id
+      WHERE c_d.course_topic_id IN (?)`,
       [topicIds]
     );
 
@@ -124,13 +124,13 @@ exports.getSingleCoursesTopic = async (req, res) => {
 
     const [teachers] = await db.query(
       `SELECT 
-      tfct.teacher_id, 
-      tfct.total_duration, 
-      tfct.total_chapter, 
+      c_d.teacher_id, 
+      c_d.total_duration, 
+      c_d.total_chapter, 
       u.*
-      FROM teachers_for_course_topic tfct
-      LEFT JOIN users u ON tfct.teacher_id = u.id
-      WHERE tfct.course_topic_id = ?`,
+      FROM course_details c_d
+      LEFT JOIN users u ON c_d.teacher_id = u.id
+      WHERE c_d.course_topic_id = ?`,
       [id]
     );
 

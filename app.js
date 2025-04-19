@@ -35,4 +35,7 @@ app.use(
   require("./router/educationRouter/courseDetailsRoute")
 );
 
+// others
+app.use("/api/v1/card", require("./router/cardRoute"));
+
 module.exports = { app };
