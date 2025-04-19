@@ -3,12 +3,13 @@ const db = require("../config/db");
 // add card
 exports.addCard = async (req, res) => {
   try {
-    const { user_id, type, type_id } = req.body;
+    const user_id = req.decodedUser.id;
+    const { type, type_id } = req.body;
 
-    if (!user_id || !type || !type_id) {
+    if (!type || !type_id) {
       return res.status(400).send({
         success: false,
-        message: "Please provide user_id, type & type_id field",
+        message: "Please provide type & type_id field",
       });
     }
 
@@ -43,112 +44,64 @@ exports.addCard = async (req, res) => {
   }
 };
 
-// card এ আছে user_id, packages_id ।
-// packages টেবিলে আছে id, course_details_id, title, price, duration, intro_url
-// course_details টেবিলে আছে `id`, `courses_id`, `course_topic_id`, `teacher_id`, `total_duration`, `total_chapter`
-// users থেকে id === course_details এর teacher_id ধরে ডাটা দেখাবো
-// courses থেকে id === course_details এর courses_id ধরে ডাটা দেখাবো status, image, title,
-// course_topic থেকে id === course_details এর course_topic_id ধরে ডাটা দেখাবো
-
 exports.getMyCard = async (req, res) => {
   try {
-    const { user_id } = req.query;
+    const user_id = req.decodedUser.id;
 
-    if (!user_id) {
-      return res.status(400).send({
-        success: false,
-        message: "Please provide user_id field",
-      });
-    }
-
-    const [package] = await db.query(
-      `
-      SELECT 
-        c.id AS card_id,
-        c.user_id,
-        p.id AS package_id,
-        p.title AS package_title,
-        p.price,
-        p.duration AS package_duration,
-        p.intro_url,
-        cd.id AS course_detail_id,
-        cd.total_duration,
-        cd.total_chapter,
-        u.id AS teacher_id,
-        u.first_name AS teacher_first_name,
-        u.last_name AS teacher_last_name,
-        u.email AS teacher_email,
-        u.phone AS teacher_phone,
-        u.country AS teacher_country,
-        u.profile_pic AS teacher_profile_pic,
-        u.average_rating AS teacher_average_rating,
-        u.total_rating AS teacher_total_rating,
-        crs.id AS course_id,
-        crs.title AS course_title,
-        crs.image AS course_image,
-        ct.id AS topic_id,
-        ct.name AS topic_name
-      FROM card c
-      LEFT JOIN packages p ON c.type_id = p.id
-      LEFT JOIN course_details cd ON p.course_details_id = cd.id
-      LEFT JOIN users u ON cd.teacher_id = u.id
-      LEFT JOIN courses crs ON cd.courses_id = crs.id
-      LEFT JOIN course_topic ct ON cd.course_topic_id = ct.id
-      WHERE c.user_id = ? AND type =?
-      `,
-      [user_id, "packages"]
-    );
-
-    const [semester] = await db.query(
-      `
-      SELECT 
-        c.id AS card_id,
-        c.user_id,
-        p.id AS package_id,
-        p.title AS package_title,
-        p.price,
-        p.duration AS package_duration,
-        p.intro_url,
-        cd.id AS course_detail_id,
-        cd.total_duration,
-        cd.total_chapter,
-        u.id AS teacher_id,
-        u.first_name AS teacher_first_name,
-        u.last_name AS teacher_last_name,
-        u.email AS teacher_email,
-        u.phone AS teacher_phone,
-        u.country AS teacher_country,
-        u.profile_pic AS teacher_profile_pic,
-        u.average_rating AS teacher_average_rating,
-        u.total_rating AS teacher_total_rating,
-        crs.id AS course_id,
-        crs.title AS course_title,
-        crs.image AS course_image,
-        ct.id AS topic_id,
-        ct.name AS topic_name
-      FROM card c
-      LEFT JOIN semester p ON c.type_id = p.id
-      LEFT JOIN course_details cd ON p.course_details_id = cd.id
-      LEFT JOIN users u ON cd.teacher_id = u.id
-      LEFT JOIN courses crs ON cd.courses_id = crs.id
-      LEFT JOIN course_topic ct ON cd.course_topic_id = ct.id
-      WHERE c.user_id = ? AND type =?
-      `,
-      [user_id, "semester"]
-    );
-
-    const result = {
-      package: package,
-      semester: semester,
+    const getCardData = async (type, tableName) => {
+      const [data] = await db.query(
+        `
+        SELECT 
+          c.id AS card_id,
+          c.user_id,
+          c.type,
+          t.id AS ${type}_id,
+          t.title AS ${type}_title,
+          t.price,
+          t.duration AS ${type}_duration,
+          t.intro_url,
+          cd.id AS course_detail_id,
+          cd.total_duration,
+          cd.total_chapter,
+          u.id AS teacher_id,
+          u.first_name AS teacher_first_name,
+          u.last_name AS teacher_last_name,
+          u.email AS teacher_email,
+          u.phone AS teacher_phone,
+          u.country AS teacher_country,
+          u.profile_pic AS teacher_profile_pic,
+          u.average_rating AS teacher_average_rating,
+          u.total_rating AS teacher_total_rating,
+          crs.id AS course_id,
+          crs.title AS course_title,
+          crs.image AS course_image,
+          ct.id AS topic_id,
+          ct.name AS topic_name
+        FROM card c
+        LEFT JOIN ${tableName} t ON c.type_id = t.id
+        LEFT JOIN course_details cd ON t.course_details_id = cd.id
+        LEFT JOIN users u ON cd.teacher_id = u.id
+        LEFT JOIN courses crs ON cd.courses_id = crs.id
+        LEFT JOIN course_topic ct ON cd.course_topic_id = ct.id
+        WHERE c.user_id = ? AND c.type = ?
+        `,
+        [user_id, type]
+      );
+      return data;
     };
 
-    res.status(200).send({
+    const packageData = await getCardData("packages", "packages");
+    const semesterData = await getCardData("semester", "semester");
+
+    const result = [...packageData, ...semesterData];
+
+    res.status(200).json({
       success: true,
       message: "Get My Card",
       data: result,
     });
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
       success: false,
       message: "Internal Server Error",
       error: error.message,
@@ -159,14 +112,7 @@ exports.getMyCard = async (req, res) => {
 // delete All card
 exports.deleteAllCard = async (req, res) => {
   try {
-    const { user_id } = req.query;
-
-    if (!user_id) {
-      return res.status(400).send({
-        success: false,
-        message: "Please provide user_id field",
-      });
-    }
+    const user_id = req.decodedUser.id;
 
     const [data] = await db.query(`SELECT * FROM card WHERE user_id=? `, [
       user_id,

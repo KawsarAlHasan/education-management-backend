@@ -6,11 +6,13 @@ const {
   deleteSingleCard,
 } = require("../controllers/cardController");
 
+const verifyUser = require("../middleware/verifyUser");
+
 const router = express.Router();
 
-router.post("/add", addCard);
-router.get("/my", getMyCard);
-router.delete("/all-delete", deleteAllCard);
+router.post("/add", verifyUser, addCard);
+router.get("/my", verifyUser, getMyCard);
+router.delete("/all-delete", verifyUser, deleteAllCard);
 router.delete("/delete/:id", deleteSingleCard);
 
 module.exports = router;

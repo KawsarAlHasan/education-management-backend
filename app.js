@@ -35,7 +35,9 @@ app.use(
   require("./router/educationRouter/courseDetailsRoute")
 );
 
-// others
+// orders
 app.use("/api/v1/card", require("./router/cardRoute"));
+app.use("/api/v1/coupon", require("./router/couponsRoute"));
+app.use("/api/v1/order", require("./router/orderRoute"));
 
 module.exports = { app };
