@@ -212,7 +212,7 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
       const packageId = package?.id;
       if (packageId) {
         const [videos] = await db.query(
-          `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+          `SELECT id, url, sr_no, title, duration, isPaid FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
           [packageId, "packages"]
         );
 
@@ -232,7 +232,7 @@ exports.getSingleTeacherWithCoursesDetails = async (req, res) => {
 
     if (semesterId) {
       const [semVideos] = await db.query(
-        `SELECT id, url, sr_no, title, duration FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
+        `SELECT id, url, sr_no, title, duration, isPaid FROM videos WHERE type_id=? AND type=? ORDER BY sr_no ASC`,
         [semesterId, "semester"]
       );
 
