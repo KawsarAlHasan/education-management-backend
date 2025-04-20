@@ -13,6 +13,23 @@ exports.createOrders = async (req, res) => {
       orders_items,
     } = req.body;
 
+    console.log(
+      `   c_number,
+      sub_total,
+      tax,
+      coupon_discount,
+      total_price,
+      coupon_code,
+      orders_items,`,
+      c_number,
+      sub_total,
+      tax,
+      coupon_discount,
+      total_price,
+      coupon_code,
+      orders_items
+    );
+
     const user_id = req.decodedUser.id;
 
     if (!total_price) {
@@ -97,6 +114,16 @@ exports.createOrders = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Order inserted successfully",
+
+      check: {
+        c_number,
+        sub_total,
+        tax,
+        coupon_discount,
+        total_price,
+        coupon_code,
+        orders_items,
+      },
     });
   } catch (error) {
     res.status(500).send({
