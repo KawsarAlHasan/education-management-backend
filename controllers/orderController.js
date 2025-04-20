@@ -104,26 +104,18 @@ exports.createOrders = async (req, res) => {
     for (const item of orders_items) {
       const { type, type_id } = item;
 
-      await db.query(
-        "INSERT INTO orders_items (order_id, type, type_id) VALUES (?, ?, ?)",
-        [orderId, type, type_id]
-      );
+      console.log("type, type_id, orderId", type, type_id, orderId);
+
+      // await db.query(
+      //   "INSERT INTO orders_items (order_id, type, type_id) VALUES (?, ?, ?)",
+      //   [orderId, type, type_id]
+      // );
     }
 
     // Send success response
     res.status(200).send({
       success: true,
       message: "Order inserted successfully",
-
-      check: {
-        c_number,
-        sub_total,
-        tax,
-        coupon_discount,
-        total_price,
-        coupon_code,
-        orders_items,
-      },
     });
   } catch (error) {
     res.status(500).send({
