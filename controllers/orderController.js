@@ -101,6 +101,8 @@ exports.createOrders = async (req, res) => {
 
     const orderId = orderResult.insertId;
 
+    console.log("orders_items", orders_items);
+
     for (const item of orders_items) {
       const { type, type_id } = item;
 
