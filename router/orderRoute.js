@@ -3,6 +3,8 @@ const {
   createOrders,
   getMyOrders,
   getSingleOrder,
+  getItemsOfMyOrder,
+  getItemsOfMyOrderWithVideos,
 } = require("../controllers/orderController");
 const verifyUser = require("../middleware/verifyUser");
 
@@ -10,6 +12,8 @@ const router = express.Router();
 
 router.post("/create", verifyUser, createOrders);
 router.get("/my", verifyUser, getMyOrders);
+router.get("/check", verifyUser, getItemsOfMyOrder);
+router.get("/check2", verifyUser, getItemsOfMyOrderWithVideos);
 router.get("/:id", getSingleOrder);
 // router.get("/user-id/:user_id", getUserOrders);
 // router.get("/:id", getSingleOrder);
