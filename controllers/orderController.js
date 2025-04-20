@@ -13,23 +13,6 @@ exports.createOrders = async (req, res) => {
       orders_items,
     } = req.body;
 
-    console.log(
-      `   c_number,
-      sub_total,
-      tax,
-      coupon_discount,
-      total_price,
-      coupon_code,
-      orders_items,`,
-      c_number,
-      sub_total,
-      tax,
-      coupon_discount,
-      total_price,
-      coupon_code,
-      orders_items
-    );
-
     const user_id = req.decodedUser.id;
 
     if (!total_price) {
@@ -101,18 +84,16 @@ exports.createOrders = async (req, res) => {
 
     const orderId = orderResult.insertId;
 
-    console.log("orders_items", orders_items);
-
     for (const item of orders_items) {
       const { type, type_id } = item;
 
-      console.log("type, type_id, orderId", type, type_id, orderId);
-
-      // await db.query(
-      //   "INSERT INTO orders_items (order_id, type, type_id) VALUES (?, ?, ?)",
-      //   [orderId, type, type_id]
-      // );
+      await db.query(
+        "INSERT INTO orders_items (order_id, type, type_id) VALUES (?, ?, ?)",
+        [orderId, type, type_id]
+      );
     }
+
+    await db.query(`DELETE FROM card WHERE user_id=?`, [user_id]);
 
     // Send success response
     res.status(200).send({
