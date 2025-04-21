@@ -137,6 +137,7 @@ exports.getMyOrders = async (req, res) => {
             t.price,
             t.duration AS ${type}_duration,
             t.intro_url,
+            t.description,
             cd.id AS course_detail_id,
             cd.total_duration,
             cd.total_chapter,
@@ -220,6 +221,7 @@ exports.getItemsOfMyOrder = async (req, res) => {
             t.price,
             t.duration AS ${type}_duration,
             t.intro_url,
+            t.description,
             cd.id AS course_detail_id,
             cd.total_duration,
             cd.total_chapter,
@@ -308,6 +310,7 @@ exports.getItemsOfMyOrderWithVideos = async (req, res) => {
             t.price,
             t.duration AS ${type}_duration,
             t.intro_url,
+            t.description,
             cd.id AS course_detail_id,
             cd.total_duration,
             cd.total_chapter,
@@ -401,6 +404,7 @@ exports.getSingleOrder = async (req, res) => {
           t.price,
           t.duration AS ${type}_duration,
           t.intro_url,
+          t.description,
           cd.id AS course_detail_id,
           cd.total_duration,
           cd.total_chapter,
@@ -484,50 +488,10 @@ exports.orderStatus = async (req, res) => {
       });
     }
 
-    const [updateData] = await db.query(
-      `UPDATE orders SET status=?  WHERE id =?`,
-      [status, orderId]
-    );
-
-    if (updateData.changedRows) {
-      // Notification Details
-      const type = "User";
-      const receiver_id = data[0].user_id;
-      const sander_id = 1;
-      const url = `/orderdetails/${data[0].id}`;
-
-      // Define notification title and message based on order status
-      let title = "Order Status Updated";
-      let message = "";
-
-      switch (status) {
-        case "Pending":
-          message =
-            "Your order is now pending. We'll notify you once it progresses.";
-          break;
-        case "Processing":
-          message =
-            "Your order is currently being processed. Please wait for further updates.";
-          break;
-        case "Completed":
-          message =
-            "Congratulations! Your order has been successfully completed.";
-          break;
-        case "Cancelled":
-          message =
-            "We're sorry to inform you that your order has been cancelled.";
-          break;
-        default:
-          message =
-            "The status of your order has been updated. Please check the details.";
-      }
-
-      // Insert Notification for User
-      const [notification] = await db.query(
-        "INSERT INTO notifications (type, receiver_id, sander_id, url, title, message) VALUES (?, ?, ?, ?, ?, ?)",
-        [type, receiver_id, sander_id, url, title, message]
-      );
-    }
+    await db.query(`UPDATE orders SET status=?  WHERE id =?`, [
+      status,
+      orderId,
+    ]);
 
     res.status(200).send({
       success: true,

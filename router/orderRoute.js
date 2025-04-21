@@ -5,6 +5,7 @@ const {
   getSingleOrder,
   getItemsOfMyOrder,
   getItemsOfMyOrderWithVideos,
+  orderStatus,
 } = require("../controllers/orderController");
 const verifyUser = require("../middleware/verifyUser");
 
@@ -15,8 +16,7 @@ router.get("/my", verifyUser, getMyOrders);
 router.get("/check", verifyUser, getItemsOfMyOrder);
 router.get("/check2", verifyUser, getItemsOfMyOrderWithVideos);
 router.get("/:id", getSingleOrder);
-// router.get("/user-id/:user_id", getUserOrders);
-// router.get("/:id", getSingleOrder);
-// router.put("/status/:id", orderStatus);
+
+router.put("/status/:id", orderStatus);
 
 module.exports = router;
