@@ -131,14 +131,24 @@ exports.getSingleAssignment = async (req, res) => {
   }
 };
 
+// const [teachers] = await db.query(
+//     `SELECT
+//     c_d.teacher_id,
+//     c_d.total_duration,
+//     c_d.total_chapter,
+//     u.*
+//     FROM course_details c_d
+//     LEFT JOIN users u ON c_d.teacher_id = u.id
+//     WHERE c_d.course_topic_id = ?`,
+//     [id]
+//   );
+
 // update Assignment
 exports.updateAssignment = async (req, res) => {
   try {
     const assignmentID = req.params.id;
 
     const { courses_id, courses_type, date, description } = req.body;
-
-    const student_id = req.decodedUser.id;
 
     const [data] = await db.query(`SELECT * FROM assignment WHERE id=? `, [
       assignmentID,

@@ -193,9 +193,10 @@ exports.getItemsOfMyOrder = async (req, res) => {
   try {
     const user_id = req.decodedUser.id;
 
-    const [orders] = await db.query(`SELECT id FROM orders WHERE user_id=?`, [
-      user_id,
-    ]);
+    const [orders] = await db.query(
+      `SELECT id, status, create_at, updated_at FROM orders WHERE user_id=?`,
+      [user_id]
+    );
 
     if (!orders || orders.length === 0) {
       return res.status(201).send({
@@ -246,7 +247,14 @@ exports.getItemsOfMyOrder = async (req, res) => {
           `,
           [orderId, type]
         );
-        return data;
+
+        return data.map((item) => ({
+          order_id: order.id,
+          order_status: order.status,
+          order_create_at: order.create_at,
+          order_updated_at: order.updated_at,
+          ...item,
+        }));
       };
 
       const packageData = await getOrderData("packages", "packages");
@@ -273,9 +281,10 @@ exports.getItemsOfMyOrderWithVideos = async (req, res) => {
   try {
     const user_id = req.decodedUser.id;
 
-    const [orders] = await db.query(`SELECT id FROM orders WHERE user_id=?`, [
-      user_id,
-    ]);
+    const [orders] = await db.query(
+      `SELECT id, status, create_at, updated_at FROM orders WHERE user_id=?`,
+      [user_id]
+    );
 
     if (!orders || orders.length === 0) {
       return res.status(201).send({
@@ -326,7 +335,13 @@ exports.getItemsOfMyOrderWithVideos = async (req, res) => {
           `,
           [orderId, type]
         );
-        return data;
+        return data.map((item) => ({
+          order_id: order.id,
+          order_status: order.status,
+          order_create_at: order.create_at,
+          order_updated_at: order.updated_at,
+          ...item,
+        }));
       };
 
       const packageData = await getOrderData("packages", "packages");
