@@ -262,7 +262,7 @@ exports.getItemsOfMyOrder = async (req, res) => {
       const packageData = await getOrderData("packages", "packages");
       const semesterData = await getOrderData("semester", "semester");
 
-      results = [...packageData, ...semesterData];
+      results.push(...packageData, ...semesterData);
     }
 
     res.status(200).json({
@@ -350,7 +350,7 @@ exports.getItemsOfMyOrderWithVideos = async (req, res) => {
       const packageData = await getOrderData("packages", "packages");
       const semesterData = await getOrderData("semester", "semester");
 
-      results = [...packageData, ...semesterData];
+      results.push(...packageData, ...semesterData);
     }
 
     for (const package of results) {
