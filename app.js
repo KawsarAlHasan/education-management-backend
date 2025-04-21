@@ -34,6 +34,10 @@ app.use(
   "/api/v1/courses-deatials",
   require("./router/educationRouter/courseDetailsRoute")
 );
+app.use(
+  "/api/v1/assignment",
+  require("./router/educationRouter/assignmentRoute")
+);
 
 // orders
 app.use("/api/v1/card", require("./router/cardRoute"));
