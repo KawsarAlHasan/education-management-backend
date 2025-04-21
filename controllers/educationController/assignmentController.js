@@ -77,13 +77,21 @@ exports.getAllAssignment = async (req, res) => {
     }
 
     for (const singleData of data) {
-      const teacher_id = singleData.teacher_id;
+      const studentID = singleData.student_id;
+      const coursesID = singleData.courses_id;
 
-      const [teacherData] = await db.query(`SELECT * FROM users WHERE id=? `, [
-        teacher_id,
+      const [studentData] = await db.query(`SELECT * FROM users WHERE id=? `, [
+        studentID,
       ]);
 
-      singleData.teacher = teacherData[0];
+      singleData.student = studentData[0];
+
+      const [coursesData] = await db.query(
+        `SELECT * FROM courses WHERE id=? `,
+        [coursesID]
+      );
+
+      singleData.courses = coursesData[0];
     }
 
     res.status(200).send({
@@ -106,9 +114,7 @@ exports.getSingleAssignment = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [data] = await db.query("SELECT * FROM assignment WHERE id = ?", [
-      id,
-    ]);
+    const [data] = await db.query(`SELECT * FROM assignment WHERE id=?`, [id]);
 
     if (data.length === 0) {
       return res.status(404).json({
@@ -117,10 +123,22 @@ exports.getSingleAssignment = async (req, res) => {
       });
     }
 
+    const [studentData] = await db.query(`SELECT * FROM users WHERE id=? `, [
+      data[0].student_id,
+    ]);
+
+    const [coursesData] = await db.query(`SELECT * FROM courses WHERE id=? `, [
+      data[0].courses_id,
+    ]);
+
     res.status(200).json({
       success: true,
       message: "Get Single Assignment",
-      data: data[0],
+      data: {
+        ...data[0],
+        student: studentData[0],
+        courses: coursesData[0],
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -130,18 +148,6 @@ exports.getSingleAssignment = async (req, res) => {
     });
   }
 };
-
-// const [teachers] = await db.query(
-//     `SELECT
-//     c_d.teacher_id,
-//     c_d.total_duration,
-//     c_d.total_chapter,
-//     u.*
-//     FROM course_details c_d
-//     LEFT JOIN users u ON c_d.teacher_id = u.id
-//     WHERE c_d.course_topic_id = ?`,
-//     [id]
-//   );
 
 // update Assignment
 exports.updateAssignment = async (req, res) => {
