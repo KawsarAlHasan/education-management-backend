@@ -1,11 +1,11 @@
 const db = require("../../config/db");
 
-// `assignment`(`id`, `courses_id`, `courses_type`, `date`, `file`, `description`, `student_id`
+// `assignment`(`id`, `courses_id`, `courses_type`, `date`, `file`, `description`, `student_id`, lavel
 
 // create Assignment
 exports.createNewAssignment = async (req, res) => {
   try {
-    const { courses_id, courses_type, date, description } = req.body;
+    const { courses_id, courses_type, date, description, lavel } = req.body;
 
     const student_id = req.decodedUser.id;
 
@@ -16,7 +16,7 @@ exports.createNewAssignment = async (req, res) => {
     }
 
     const query =
-      "INSERT INTO assignment (courses_id, courses_type, date, file, description, student_id) VALUES (?, ?, ?, ?, ?, ?)";
+      "INSERT INTO assignment (courses_id, courses_type, date, file, description, student_id, lavel) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     const values = [
       courses_id,
@@ -25,6 +25,7 @@ exports.createNewAssignment = async (req, res) => {
       file || "",
       description || "",
       student_id,
+      lavel || "",
     ];
 
     const [result] = await db.query(query, values);
@@ -77,8 +78,31 @@ exports.getAllAssignment = async (req, res) => {
     }
 
     for (const singleData of data) {
+      const assignmentID = singleData.id;
       const studentID = singleData.student_id;
       const coursesID = singleData.courses_id;
+
+      const [bidData] = await db.query(
+        `SELECT 
+        b.assignment_id,
+        b.proposal_sender_id,
+        b.bid_price,
+        ur.first_name,
+        ur.last_name,
+        ur.email,
+        ur.country,
+        ur.phone,
+        ur.profile_pic,
+        ur.average_rating,
+        ur.total_rating,
+        ur.status AS proposal_sender_status
+        FROM bid b
+        LEFT JOIN users ur ON b.proposal_sender_id = ur.id
+        WHERE b.assignment_id=? `,
+        [assignmentID]
+      );
+
+      singleData.bid = bidData;
 
       const [studentData] = await db.query(`SELECT * FROM users WHERE id=? `, [
         studentID,

@@ -8,7 +8,7 @@ const {
   getSingleAssignment,
   deleteAssignment,
   updateAssignment,
-} = require("../../controllers/educationController/assignmentController");
+} = require("../../controllers/bid/assignmentController");
 
 const router = express.Router();
 
