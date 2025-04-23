@@ -16,6 +16,18 @@ exports.createNewBid = async (req, res) => {
 
     const proposal_sender_id = req.decodedUser.id;
 
+    const [checkBidData] = await db.query(
+      `SELECT bid_price FROM bid WHERE assignment_id=? AND proposal_sender_id=?`,
+      [assignment_id, proposal_sender_id]
+    );
+
+    if (checkBidData.length > 0) {
+      await db.query(
+        `DELETE FROM bid WHERE assignment_id=? AND proposal_sender_id=?`,
+        [assignment_id, proposal_sender_id]
+      );
+    }
+
     const query =
       "INSERT INTO bid (assignment_id, proposal_sender_id, bid_price) VALUES (?, ?, ?)";
 
