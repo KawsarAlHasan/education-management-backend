@@ -53,10 +53,20 @@ exports.createNewAssignment = async (req, res) => {
 // get all Assignment
 exports.getAllAssignment = async (req, res) => {
   try {
-    const { order } = req.query;
-    let query = "SELECT * FROM assignment";
+    const { order, status } = req.query;
 
+    let query = "SELECT * FROM assignment";
     let queryParams = [];
+    let conditions = [];
+
+    if (status !== undefined && status !== "") {
+      conditions.push("status = ?");
+      queryParams.push(status);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
 
     if (
       order &&
@@ -70,7 +80,7 @@ exports.getAllAssignment = async (req, res) => {
     const [data] = await db.query(query, queryParams);
 
     if (!data || data.length === 0) {
-      return res.status(200).send({
+      return res.status(404).send({
         success: true,
         message: "No Assignment found",
         data: [],
@@ -81,6 +91,15 @@ exports.getAllAssignment = async (req, res) => {
       const assignmentID = singleData.id;
       const studentID = singleData.student_id;
       const coursesID = singleData.courses_id;
+      const winningBidder = singleData.winning_bidder;
+
+      const [bidWinner] = await db.query(`SELECT * FROM users WHERE id=? `, [
+        winningBidder,
+      ]);
+
+      const bid_winner = bidWinner.length > 0 ? bidWinner[0] : {};
+
+      singleData.bid_winner = bid_winner;
 
       const [bidData] = await db.query(
         `SELECT 
@@ -128,6 +147,188 @@ exports.getAllAssignment = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in Get All Assignment",
+      error: error.message,
+    });
+  }
+};
+
+// get My Assignment
+exports.getMyAssignment = async (req, res) => {
+  try {
+    const student_id = req.decodedUser.id;
+
+    const { order, status } = req.query;
+
+    let query = "SELECT * FROM assignment";
+    let queryParams = [];
+    let conditions = [];
+
+    conditions.push("student_id = ?");
+    queryParams.push(student_id);
+
+    if (status !== undefined && status !== "") {
+      conditions.push("status = ?");
+      queryParams.push(status);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    if (
+      order &&
+      (order.toUpperCase() === "ASC" || order.toUpperCase() === "DESC")
+    ) {
+      query += " ORDER BY id " + order.toUpperCase();
+    } else {
+      query += " ORDER BY id ASC";
+    }
+
+    const [data] = await db.query(query, queryParams);
+
+    if (!data || data.length === 0) {
+      return res.status(404).send({
+        success: true,
+        message: "No Assignment found",
+        data: [],
+      });
+    }
+
+    for (const singleData of data) {
+      const assignmentID = singleData.id;
+      const studentID = singleData.student_id;
+      const coursesID = singleData.courses_id;
+      const winningBidder = singleData.winning_bidder;
+
+      const [bidWinner] = await db.query(`SELECT * FROM users WHERE id=? `, [
+        winningBidder,
+      ]);
+
+      const bid_winner = bidWinner.length > 0 ? bidWinner[0] : {};
+
+      singleData.bid_winner = bid_winner;
+
+      const [bidData] = await db.query(
+        `SELECT 
+        b.assignment_id,
+        b.proposal_sender_id,
+        b.bid_price,
+        ur.first_name,
+        ur.last_name,
+        ur.email,
+        ur.country,
+        ur.phone,
+        ur.profile_pic,
+        ur.average_rating,
+        ur.total_rating,
+        ur.status AS proposal_sender_status
+        FROM bid b
+        LEFT JOIN users ur ON b.proposal_sender_id = ur.id
+        WHERE b.assignment_id=? `,
+        [assignmentID]
+      );
+
+      singleData.bid = bidData;
+
+      const [studentData] = await db.query(`SELECT * FROM users WHERE id=? `, [
+        studentID,
+      ]);
+
+      singleData.student = studentData[0];
+
+      const [coursesData] = await db.query(
+        `SELECT * FROM courses WHERE id=? `,
+        [coursesID]
+      );
+
+      singleData.courses = coursesData[0];
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "My Assignment",
+      totalCoursesDetails: data.length,
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in Get My Assignment",
+      error: error.message,
+    });
+  }
+};
+
+// get My Assignment As BidWinner
+exports.getMyAssignmentAsBidWinner = async (req, res) => {
+  try {
+    const winning_bidder = req.decodedUser.id;
+
+    const { order, status } = req.query;
+
+    let query = "SELECT * FROM assignment";
+    let queryParams = [];
+    let conditions = [];
+
+    conditions.push("winning_bidder = ?");
+    queryParams.push(winning_bidder);
+
+    if (status !== undefined && status !== "") {
+      conditions.push("status = ?");
+      queryParams.push(status);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    if (
+      order &&
+      (order.toUpperCase() === "ASC" || order.toUpperCase() === "DESC")
+    ) {
+      query += " ORDER BY id " + order.toUpperCase();
+    } else {
+      query += " ORDER BY id ASC";
+    }
+
+    const [data] = await db.query(query, queryParams);
+
+    if (!data || data.length === 0) {
+      return res.status(404).send({
+        success: true,
+        message: "No Assignment found",
+        data: [],
+      });
+    }
+
+    for (const singleData of data) {
+      const studentID = singleData.student_id;
+      const coursesID = singleData.courses_id;
+
+      const [studentData] = await db.query(`SELECT * FROM users WHERE id=? `, [
+        studentID,
+      ]);
+
+      singleData.student = studentData[0];
+
+      const [coursesData] = await db.query(
+        `SELECT * FROM courses WHERE id=? `,
+        [coursesID]
+      );
+
+      singleData.courses = coursesData[0];
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "My Assignment As a Bid winner",
+      totalCoursesDetails: data.length,
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in Get My Assignment As a Bid winner",
       error: error.message,
     });
   }

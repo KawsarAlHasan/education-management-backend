@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { app } = require("./app");
 const mySqlPool = require("./config/db");
+const bidFinalBySchedule = require("./scheduleChecker");
 dotenv.config();
 
 const globalCorsOptions = {
@@ -31,6 +32,8 @@ const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`Education Management server is running on port ${port}`);
 });
+
+bidFinalBySchedule();
 
 // Default Route
 app.get("/", (req, res) => {

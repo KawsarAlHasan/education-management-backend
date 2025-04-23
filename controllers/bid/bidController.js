@@ -67,6 +67,64 @@ exports.createNewBid = async (req, res) => {
   }
 };
 
+exports.myBid = async (req, res) => {
+  try {
+    const proposal_sender_id = req.decodedUser.id;
+
+    const [data] = await db.query(
+      `SELECT * FROM bid WHERE proposal_sender_id=?`,
+      [proposal_sender_id]
+    );
+
+    if (!data || data.length === 0) {
+      return res.status(404).send({
+        success: true,
+        message: "No Bid found",
+        data: [],
+      });
+    }
+
+    for (const bid of data) {
+      const assignment_id = bid.assignment_id;
+
+      const [assignment] = await db.query(
+        `SELECT 
+          agnmt.*,
+          ur.first_name AS user_first_name,
+          ur.last_name AS user_last_name,
+          ur.email AS user_email,
+          ur.country AS user_country,
+          ur.phone AS user_phone,
+          ur.profile_pic AS user_profile_pic,
+          ur.average_rating AS user_average_rating,
+          ur.total_rating AS user_total_rating,
+          curs.title AS courses_title,
+          curs.image AS courses_image
+         FROM assignment agnmt
+         LEFT JOIN users ur ON agnmt.student_id = ur.id
+         LEFT JOIN courses curs ON agnmt.courses_id = curs.id
+         WHERE agnmt.id = ?`,
+        [assignment_id]
+      );
+
+      const assgmt = assignment.length > 0 ? assignment[0] : {};
+      bid.assignment = assgmt;
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Get My Bid",
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 // get all Bid
 exports.getAllBid = async (req, res) => {
   try {
