@@ -450,3 +450,38 @@ exports.deleteAssignment = async (req, res) => {
     });
   }
 };
+
+// update Assignment Status
+exports.updateAssignmentStatus = async (req, res) => {
+  try {
+    const assignmentID = req.params.id;
+
+    const { status } = req.body;
+
+    const [data] = await db.query(`SELECT * FROM assignment WHERE id=? `, [
+      assignmentID,
+    ]);
+    if (!data || data.length === 0) {
+      return res.status(201).send({
+        success: false,
+        message: "No assignment found",
+      });
+    }
+
+    await db.query(`UPDATE assignment SET status=? WHERE id =?`, [
+      status || data[0].status,
+      assignmentID,
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "Assignment status updated successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in Update Assignment status",
+      error: error.message,
+    });
+  }
+};

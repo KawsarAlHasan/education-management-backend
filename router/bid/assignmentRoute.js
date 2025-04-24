@@ -10,6 +10,7 @@ const {
   updateAssignment,
   getMyAssignment,
   getMyAssignmentAsBidWinner,
+  updateAssignmentStatus,
 } = require("../../controllers/bid/assignmentController");
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.put(
   uploadFile.single("file"),
   updateAssignment
 );
+router.put("/status/:id", updateAssignmentStatus);
 router.delete("/delete/:id", deleteAssignment);
 
 module.exports = router;
