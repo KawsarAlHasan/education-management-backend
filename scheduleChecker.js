@@ -4,7 +4,7 @@ const db = require("./config/db");
 const bidFinalBySchedule = async (req, res) => {
   try {
     const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneHourAgo = new Date(now.getTime() - 3 * 60 * 1000);
 
     // range of +-30 second
     const lowerBound = new Date(oneHourAgo.getTime() - 30 * 1000);

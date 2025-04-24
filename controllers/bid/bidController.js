@@ -100,7 +100,7 @@ exports.myBid = async (req, res) => {
       const assignment_id = bid.assignment_id;
 
       const [assignment] = await db.query(
-        `SELECT 
+        `SELECT
           agnmt.*,
           ur.first_name AS user_first_name,
           ur.last_name AS user_last_name,
