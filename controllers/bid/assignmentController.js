@@ -422,6 +422,45 @@ exports.updateAssignment = async (req, res) => {
   }
 };
 
+// Assignment submit_file
+exports.assignmentSubmitFile = async (req, res) => {
+  try {
+    const assignmentID = req.params.id;
+
+    const [data] = await db.query(`SELECT * FROM assignment WHERE id=? `, [
+      assignmentID,
+    ]);
+    if (!data || data.length === 0) {
+      return res.status(201).send({
+        success: false,
+        message: "No assignment found",
+      });
+    }
+
+    const files = req.file;
+    let submit_file = data[0].file;
+    if (files && files.path) {
+      submit_file = `https://education-management-backend-8jm1.onrender.com/public/files/${files.filename}`;
+    }
+
+    await db.query(`UPDATE assignment SET submit_file=? WHERE id =?`, [
+      submit_file,
+      assignmentID,
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "Assignment Submit file successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 // delete Assignment
 exports.deleteAssignment = async (req, res) => {
   try {

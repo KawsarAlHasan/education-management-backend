@@ -484,7 +484,17 @@ exports.updateUser = async (req, res) => {
     const userPreData = req.decodedUser;
 
     // Extract data from the request body
-    const { first_name, last_name, email, phone, country, role } = req.body;
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      country,
+      role,
+      intro_video,
+      description,
+      price_per_hour,
+    } = req.body;
 
     const images = req.file;
     let profile_pic = userPreData?.profile_pic;
@@ -494,7 +504,7 @@ exports.updateUser = async (req, res) => {
 
     // Update the user data in the database
     const [data] = await db.query(
-      `UPDATE users SET first_name=?, last_name=?, email=?, phone=?, profile_pic=?, country=?, role=? WHERE id = ?`,
+      `UPDATE users SET first_name=?, last_name=?, email=?, phone=?, profile_pic=?, country=?, role=?, intro_video=?, description=?, price_per_hour=? WHERE id = ?`,
       [
         first_name || userPreData.first_name,
         last_name || userPreData.last_name,
@@ -503,6 +513,9 @@ exports.updateUser = async (req, res) => {
         profile_pic,
         country || userPreData.country,
         role || userPreData.role,
+        intro_video || userPreData.intro_video,
+        description || userPreData.description,
+        price_per_hour || userPreData.price_per_hour,
         userPreData.id,
       ]
     );

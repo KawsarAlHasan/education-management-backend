@@ -38,6 +38,7 @@ app.use(
 // bid
 app.use("/api/v1/assignment", require("./router/bid/assignmentRoute"));
 app.use("/api/v1/bid", require("./router/bid/bidRoute"));
+app.use("/api/v1/message", require("./router/messagesRoute"));
 
 // orders
 app.use("/api/v1/card", require("./router/cardRoute"));
