@@ -43,7 +43,7 @@ exports.getMessage = async (req, res) => {
     }
 
     const [messages] = await db.query(
-      "SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY created_at ASC",
+      "SELECT * FROM messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY created_at DESC",
       [sender_id, receiver_id, receiver_id, sender_id]
     );
 
@@ -61,47 +61,27 @@ exports.getMessage = async (req, res) => {
   }
 };
 
-// first code
+//// my code user list
 // exports.usersListForMessage = async (req, res) => {
 //   try {
 //     const { receiver_id } = req.params;
 
-//     const [messages] = await db.execute(
-//       `SELECT m.sender_id, m.receiver_id, m.created_at
+//     const [conversations] = await db.execute(
+//       `SELECT
+//           CASE
+//               WHEN m.sender_id = ? THEN m.receiver_id
+//               ELSE m.sender_id
+//           END AS participant_id,
+//           MAX(m.created_at) AS last_message_time
 //        FROM messages m
-//        WHERE m.id IN (
-//            SELECT MAX(id) FROM messages
-//            WHERE sender_id = ? OR receiver_id = ?
-//            GROUP BY sender_id, receiver_id
-//        )
-//        ORDER BY m.created_at DESC`,
-//       [receiver_id, receiver_id]
+//        WHERE m.sender_id = ? OR m.receiver_id = ?
+//        GROUP BY participant_id
+//        ORDER BY last_message_time DESC`,
+//       [receiver_id, receiver_id, receiver_id]
 //     );
 
-//     const usersMap = {};
-//     const senderIds = new Set();
-
-//     messages.forEach((row) => {
-//       const senderId = row.sender_id;
-//       const receiverId = row.receiver_id;
-
-//       const participantId = senderId === receiver_id ? receiverId : senderId;
-
-//       // Only consider users (IDs starting with "u")
-//       if (participantId) {
-//         senderIds.add(participantId);
-
-//         if (!usersMap[participantId]) {
-//           usersMap[participantId] = {
-//             id: participantId,
-//             unread_count: 0,
-//             last_message_time: row.created_at,
-//           };
-//         }
-//       }
-//     });
-
-//     const unreadCounts = await db.execute(
+//     // find un read message
+//     const [unreadCounts] = await db.execute(
 //       `SELECT sender_id, COUNT(*) as unread_count
 //        FROM messages
 //        WHERE receiver_id = ? AND is_read = 0
@@ -109,24 +89,22 @@ exports.getMessage = async (req, res) => {
 //       [receiver_id]
 //     );
 
-//     unreadCounts[0].forEach(({ sender_id, unread_count }) => {
-//       if (sender_id) {
-//         if (usersMap[sender_id]) {
-//           usersMap[sender_id].unread_count = unread_count;
-//         }
-//       }
+//     const unreadMap = {};
+//     unreadCounts.forEach(({ sender_id, unread_count }) => {
+//       unreadMap[sender_id] = unread_count;
 //     });
 
-//     const userQueries = Object.keys(usersMap).map(async (id) => {
+//     const userQueries = conversations.map(async (conv) => {
 //       const [user] = await db.execute(
 //         "SELECT id, first_name, last_name, profile_pic FROM users WHERE id = ?",
-//         [id]
+//         [conv.participant_id]
 //       );
+
 //       return user.length > 0
 //         ? {
 //             ...user[0],
-//             unread_count: usersMap[id].unread_count,
-//             last_message_time: usersMap[id].last_message_time,
+//             unread_count: unreadMap[conv.participant_id] || 0,
+//             last_message_time: conv.last_message_time,
 //           }
 //         : null;
 //     });
@@ -134,14 +112,10 @@ exports.getMessage = async (req, res) => {
 //     const usersInfo = await Promise.all(userQueries);
 //     const filteredUsers = usersInfo.filter((user) => user !== null);
 
-//     const sortedUsers = filteredUsers.sort(
-//       (a, b) => new Date(b.last_message_time) - new Date(a.last_message_time)
-//     );
-
 //     res.status(200).json({
 //       success: true,
-//       message: "Sender user details retrieved",
-//       users: sortedUsers,
+//       message: "Conversation partners retrieved successfully",
+//       users: filteredUsers,
 //     });
 //   } catch (error) {
 //     res.status(500).json({
@@ -152,7 +126,7 @@ exports.getMessage = async (req, res) => {
 //   }
 // };
 
-// deepseek code
+// user list (deepseek)
 exports.usersListForMessage = async (req, res) => {
   try {
     const { receiver_id } = req.params;
@@ -163,12 +137,28 @@ exports.usersListForMessage = async (req, res) => {
               WHEN m.sender_id = ? THEN m.receiver_id 
               ELSE m.sender_id 
           END AS participant_id,
-          MAX(m.created_at) AS last_message_time
+          MAX(m.created_at) AS last_message_time,
+          (SELECT message FROM messages 
+           WHERE (sender_id = ? AND receiver_id = participant_id) 
+              OR (sender_id = participant_id AND receiver_id = ?)
+           ORDER BY created_at DESC LIMIT 1) AS last_message_content,
+          (SELECT sender_id FROM messages 
+           WHERE (sender_id = ? AND receiver_id = participant_id) 
+              OR (sender_id = participant_id AND receiver_id = ?)
+           ORDER BY created_at DESC LIMIT 1) AS last_message_sender_id
        FROM messages m
        WHERE m.sender_id = ? OR m.receiver_id = ?
        GROUP BY participant_id
        ORDER BY last_message_time DESC`,
-      [receiver_id, receiver_id, receiver_id]
+      [
+        receiver_id,
+        receiver_id,
+        receiver_id,
+        receiver_id,
+        receiver_id,
+        receiver_id,
+        receiver_id,
+      ]
     );
 
     // find un read message
@@ -196,6 +186,8 @@ exports.usersListForMessage = async (req, res) => {
             ...user[0],
             unread_count: unreadMap[conv.participant_id] || 0,
             last_message_time: conv.last_message_time,
+            last_message_content: conv.last_message_content,
+            last_message_sender_id: conv.last_message_sender_id,
           }
         : null;
     });
