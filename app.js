@@ -35,6 +35,17 @@ app.use(
   require("./router/educationRouter/courseDetailsRoute")
 );
 
+// school education
+app.use("/api/v1/school-courses", require("./router/school/schoolCourseRoute"));
+// app.use(
+//   "/api/v1/courses-topic",
+//   require("./router/educationRouter/courseTopicRoute")
+// );
+// app.use(
+//   "/api/v1/courses-deatials",
+//   require("./router/educationRouter/courseDetailsRoute")
+// );
+
 // bid
 app.use("/api/v1/assignment", require("./router/bid/assignmentRoute"));
 app.use("/api/v1/bid", require("./router/bid/bidRoute"));
