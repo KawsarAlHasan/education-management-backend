@@ -180,6 +180,44 @@ exports.getHomeTutoringByCourseId = async (req, res) => {
   }
 };
 
+// Get Study Notes By Course Id
+exports.getStudyNotesByCourseId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [data] = await db.query("SELECT * FROM school_courses WHERE id = ?", [
+      id,
+    ]);
+
+    if (data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Data not found",
+      });
+    }
+
+    const [studyNotes] = await db.query(
+      `SELECT * FROM study_notes WHERE school_courses_id=?`,
+      [id]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Get Single school courses",
+      data: {
+        ...data[0],
+        studyNotes,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error in fetching school courses",
+      error: error.message,
+    });
+  }
+};
+
 // update School courses
 exports.updateSchoolCourses = async (req, res) => {
   try {

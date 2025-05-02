@@ -3,6 +3,7 @@ const uploadImage = require("../../middleware/fileUploader");
 const {
   createNewSchoolCourses,
   getAllSchoolCourses,
+  getStudyNotesByCourseId,
   getSingleSchoolCourses,
   updateSchoolCourses,
   schoolCoursesStatusUpdate,
@@ -15,6 +16,7 @@ const router = express.Router();
 router.post("/create", uploadImage.single("image"), createNewSchoolCourses);
 router.get("/all", getAllSchoolCourses);
 router.get("/home-tutoring/:id", getHomeTutoringByCourseId);
+router.get("/study-note/:id", getStudyNotesByCourseId);
 router.get("/:id", getSingleSchoolCourses);
 router.put("/update/:id", uploadImage.single("image"), updateSchoolCourses);
 router.put("/status/:id", schoolCoursesStatusUpdate);

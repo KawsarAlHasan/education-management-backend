@@ -539,3 +539,76 @@ exports.updateUser = async (req, res) => {
     });
   }
 };
+
+exports.teachersSearch = async (req, res) => {
+  try {
+    let { name } = req.query;
+
+    // Initialize SQL query and parameters array
+    let sqlQuery = "SELECT * FROM users WHERE 1=1";
+    const queryParams = [];
+
+    // Add name search if provided
+    if (name) {
+      const searchTerm = name.trim();
+      const nameParts = searchTerm.split(/\s+/); // Split search term by spaces
+
+      if (nameParts.length === 1) {
+        // Single word search - check both first and last names
+        sqlQuery += " AND (first_name LIKE ? OR last_name LIKE ?)";
+        queryParams.push(`%${searchTerm}%`, `%${searchTerm}%`);
+      } else {
+        // Multiple words search - more sophisticated matching
+        sqlQuery += " AND (";
+
+        // Option 1: Exact match for first_name + last_name
+        sqlQuery += "(first_name = ? AND last_name = ?)";
+        queryParams.push(
+          searchTerm.split(" ")[0],
+          searchTerm.split(" ").slice(1).join(" ")
+        );
+
+        // Option 2: Exact match for last_name + first_name (reverse order)
+        sqlQuery += " OR (first_name = ? AND last_name = ?)";
+        queryParams.push(
+          searchTerm.split(" ").slice(-1)[0],
+          searchTerm.split(" ").slice(0, -1).join(" ")
+        );
+
+        // Option 3: Partial match for compound names (like "Shakib Al")
+        sqlQuery += " OR (CONCAT(first_name, ' ', last_name) LIKE ?";
+        queryParams.push(`%${searchTerm}%`);
+
+        // Option 4: Partial match within first_name (for "Shakib Al Hasan")
+        sqlQuery += " OR first_name LIKE ?";
+        queryParams.push(`%${searchTerm}%`);
+
+        sqlQuery += ")";
+      }
+    }
+
+    // Execute the query with filters
+    const [data] = await db.query(sqlQuery, queryParams);
+
+    if (!data || data.length === 0) {
+      return res.status(200).send({
+        success: true,
+        message: "No users found",
+        data: [],
+      });
+    }
+
+    // Send response
+    res.status(200).send({
+      success: true,
+      message: "Users found",
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error in user search",
+      error: error.message,
+    });
+  }
+};
