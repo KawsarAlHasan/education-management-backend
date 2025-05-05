@@ -139,6 +139,7 @@ exports.getHomeTutoringByCourseId = async (req, res) => {
 
     const [homeTutoringData] = await db.query(
       `SELECT 
+        hmt.id AS home_tutoring_id,
         hmt.school_courses_id,
         hmt.teacher_id,
         ur.first_name,

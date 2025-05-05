@@ -61,72 +61,6 @@ exports.getMessage = async (req, res) => {
   }
 };
 
-//// my code user list
-// exports.usersListForMessage = async (req, res) => {
-//   try {
-//     const { receiver_id } = req.params;
-
-//     const [conversations] = await db.execute(
-//       `SELECT
-//           CASE
-//               WHEN m.sender_id = ? THEN m.receiver_id
-//               ELSE m.sender_id
-//           END AS participant_id,
-//           MAX(m.created_at) AS last_message_time
-//        FROM messages m
-//        WHERE m.sender_id = ? OR m.receiver_id = ?
-//        GROUP BY participant_id
-//        ORDER BY last_message_time DESC`,
-//       [receiver_id, receiver_id, receiver_id]
-//     );
-
-//     // find un read message
-//     const [unreadCounts] = await db.execute(
-//       `SELECT sender_id, COUNT(*) as unread_count
-//        FROM messages
-//        WHERE receiver_id = ? AND is_read = 0
-//        GROUP BY sender_id`,
-//       [receiver_id]
-//     );
-
-//     const unreadMap = {};
-//     unreadCounts.forEach(({ sender_id, unread_count }) => {
-//       unreadMap[sender_id] = unread_count;
-//     });
-
-//     const userQueries = conversations.map(async (conv) => {
-//       const [user] = await db.execute(
-//         "SELECT id, first_name, last_name, profile_pic FROM users WHERE id = ?",
-//         [conv.participant_id]
-//       );
-
-//       return user.length > 0
-//         ? {
-//             ...user[0],
-//             unread_count: unreadMap[conv.participant_id] || 0,
-//             last_message_time: conv.last_message_time,
-//           }
-//         : null;
-//     });
-
-//     const usersInfo = await Promise.all(userQueries);
-//     const filteredUsers = usersInfo.filter((user) => user !== null);
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Conversation partners retrieved successfully",
-//       users: filteredUsers,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// user list (deepseek)
 exports.usersListForMessage = async (req, res) => {
   try {
     const { receiver_id } = req.params;
@@ -208,6 +142,73 @@ exports.usersListForMessage = async (req, res) => {
     });
   }
 };
+
+//// my code user list
+// exports.usersListForMessage = async (req, res) => {
+//   try {
+//     const { receiver_id } = req.params;
+
+//     const [conversations] = await db.execute(
+//       `SELECT
+//           CASE
+//               WHEN m.sender_id = ? THEN m.receiver_id
+//               ELSE m.sender_id
+//           END AS participant_id,
+//           MAX(m.created_at) AS last_message_time
+//        FROM messages m
+//        WHERE m.sender_id = ? OR m.receiver_id = ?
+//        GROUP BY participant_id
+//        ORDER BY last_message_time DESC`,
+//       [receiver_id, receiver_id, receiver_id]
+//     );
+
+//     // find un read message
+//     const [unreadCounts] = await db.execute(
+//       `SELECT sender_id, COUNT(*) as unread_count
+//        FROM messages
+//        WHERE receiver_id = ? AND is_read = 0
+//        GROUP BY sender_id`,
+//       [receiver_id]
+//     );
+
+//     const unreadMap = {};
+//     unreadCounts.forEach(({ sender_id, unread_count }) => {
+//       unreadMap[sender_id] = unread_count;
+//     });
+
+//     const userQueries = conversations.map(async (conv) => {
+//       const [user] = await db.execute(
+//         "SELECT id, first_name, last_name, profile_pic FROM users WHERE id = ?",
+//         [conv.participant_id]
+//       );
+
+//       return user.length > 0
+//         ? {
+//             ...user[0],
+//             unread_count: unreadMap[conv.participant_id] || 0,
+//             last_message_time: conv.last_message_time,
+//           }
+//         : null;
+//     });
+
+//     const usersInfo = await Promise.all(userQueries);
+//     const filteredUsers = usersInfo.filter((user) => user !== null);
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Conversation partners retrieved successfully",
+//       users: filteredUsers,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Internal Server Error",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// user list (deepseek)
 
 exports.singleUserMessage = async (req, res) => {
   try {
